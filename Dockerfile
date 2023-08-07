@@ -1,4 +1,4 @@
-FROM ruby:3.1.4-alpine3.16
+FROM ruby:3.1.4-slim
 
 MAINTAINER Andrew Kane <andrew@ankane.org>
 
@@ -13,14 +13,15 @@ WORKDIR $INSTALL_PATH
 
 COPY . .
 
-RUN apk add --update build-base git libpq-dev && \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential libpq-dev && \
     gem install bundler && \
     bundle install && \
     bundle binstubs --all && \
     bundle exec rake assets:precompile && \
     rm -rf tmp && \
-    apk del build-base git && \
-    rm -rf /var/cache/apk/*
+    apt-get purge -y --auto-remove build-essential && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV PORT 8080
 
